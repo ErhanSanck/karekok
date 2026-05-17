@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kareköklü Sayılar Gelişmiş Eğitim Paneli</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            max-width: 650px;
+            width: 100%;
+            text-align: center;
+        }
+        h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        /* Menü Butonları */
+        .menu-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 15px;
+        }
+        .menu-btn {
+            background-color: #edf2f7;
+            color: #4a5568;
+            border: none;
+            padding: 10px 14px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .menu-btn:hover {
+            background-color: #e2e8f0;
+        }
+        .menu-btn.active {
+            background-color: #3182ce;
+            color: white;
+        }
+        /* Soru Alanı */
+        .question-box {
+            background-color: #f7fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+        }
+        .question-type {
+            font-size: 1.05rem;
+            color: #4a5568;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        .math-expr {
+            font-size: 2.3rem;
+            margin: 20px 0;
+            color: #1a202c;
+            font-weight: bold;
+        }
+        /* Giriş Alanları */
+        .input-group {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        input[type="number"] {
+            width: 85px;
+            padding: 12px;
+            font-size: 1.3rem;
+            border: 2px solid #cbd5e0;
+            border-radius: 8px;
+            text-align: center;
+        }
+        input[type="number"]:focus {
+            border-color: #3182ce;
+            outline: none;
+        }
+        .math-symbol {
+            font-size: 2rem;
+            font-weight: normal;
+        }
+        /* İşlem Butonları */
+        .action-btn {
+            background-color: #3182ce;
+            color: white;
+            border: none;
+            padding: 14px 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+        .action-btn:hover {
+            background-color: #2b6cb0;
+        }
+        .btn-next {
+            background-color: #38a169;
+        }
+        .btn-next:hover {
+            background-color: #2f855a;
+        }
+        /* Sonuç ve Skor */
+        .result {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-top: 20px;
+            min-height: 35px;
+        }
+        .correct { color: #38a169; }
+        .wrong { color: #e53e3e; }
+        .hidden { display: none !important; }
+        .score-board {
+            margin-top: 25px;
+            font-size: 1rem;
+            color: #718096;
+            display: flex;
+            justify-content: space-around;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 15px;
+        }
+        .score-box {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Kareköklü Sayılar Alıştırma Paneli</h2>
+    
+    <div class="menu-bar">
+        <button id="menu1" class="menu-btn active" onclick="switchMenu(1)">Kök Dışına Çıkarma</button>
+        <button id="menu2" class="menu-btn" onclick="switchMenu(2)">Kök İçine Alma</button>
+        <button id="menu3" class="menu-btn" onclick="switchMenu(3)">Toplama & Çıkarma</button>
+        <button id="menu4" class="menu-btn" onclick="switchMenu(4)">Çarpma & Bölme</button>
+    </div>
+
+    <div class="question-box">
+        <div id="questionType" class="question-type">Yükleniyor...</div>
+        <div id="questionDisplay" class="math-expr"></div>
+
+        <div id="inputsContainer" class="input-group">
+            <input type="number" id="ansA" placeholder="a">
+            <span id="rootSymbol" class="math-symbol">√</span>
+            <input type="number" id="ansB" placeholder="b">
+        </div>
+    </div>
+
+    <button id="btnCheck" class="action-btn" onclick="checkAnswer()">Cevabı Kontrol Et</button>
+    <button id="btnNext" class="action-btn btn-next hidden" onclick="generateQuestion()">Yeni Soru Getir</button>
+
+    <div id="resultMessage" class="result"></div>
+
+    <div class="score-board">
+        <div>Doğru: <span id="correctCount" class="score-box" style="color: #38a169;">0</span></div>
+        <div>Yanlış: <span id="wrongCount" class="score-box" style="color: #e53e3e;">0</span></div>
+    </div>
+</div>
+
+<script>
+    let activeMenu = 1; // 1: Dışarı, 2: İçeri, 3: Toplama/Çıkarma, 4: Çarpma/Bölme
+    let targetA = 0, targetB = 0; // Doğru cevap a√b bileşenleri
+    let scoreCorrect = 0, scoreWrong = 0;
+
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    // Bir sayıyı en sade a√b haline getirir
+    function simplifyRoot(n) {
+        let a = 1;
+        let b = n;
+        for (let i = Math.floor(Math.sqrt(n)); i >= 2; i--) {
+            if (n % (i * i) === 0) {
+                a = i;
+                b = n / (i * i);
+                break;
+            }
+        }
+        return { a, b };
+    }
+
+    // Menüler arası geçiş işlevi
+    function switchMenu(menuId) {
+        activeMenu = menuId;
+        
+        // Aktif buton görselini güncelle
+        document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(`menu${menuId}`).classList.add('active');
+
+        // Kök içine alma (Menu 2) seçildiğinde arayüzü tek kutulu (√x) yapalım
+        const rootSymbol = document.getElementById("rootSymbol");
+        const ansA = document.getElementById("ansA");
+        const ansB = document.getElementById("ansB");
+
+        if (menuId === 2) {
+            ansA.classList.add("hidden");
+            rootSymbol.innerText = "√";
+            ansB.placeholder = "Sayı";
+            ansB.style.width = "120px";
+        } else {
+            ansA.classList.remove("hidden");
+            rootSymbol.innerText = "√";
+            ansA.placeholder = "a";
+            ansB.placeholder = "b";
+            ansB.style.width = "85px";
+        }
+
+        generateQuestion();
+    }
+
+    // Soru Üretim Merkezi
+    function generateQuestion() {
+        // Ekranı temizle
+        document.getElementById("resultMessage").innerText = "";
+        document.getElementById("resultMessage").className = "result";
+        document.getElementById("btnCheck").classList.remove("hidden");
+        document.getElementById("btnNext").classList.add("hidden");
+        
+        // Kutuları temizle
+        document.getElementById("ansA").value = "";
+        document.getElementById("ansB").value = "";
+
+        if (activeMenu === 1) {
+            // MENÜ 1: KÖK DIŞINA ÇIKARMA
+            document.getElementById("questionType").innerText = "Verilen köklü sayıyı en sade a√b biçiminde yazınız:";
+            
+            let a = getRandomInt(2, 7);
+            let b = getRandomInt(2, 6);
+            while(Math.sqrt(b) % 1 === 0) { b = getRandomInt(2, 6); } 
+            
+            let x = (a * a) * b;
+            let simplified = simplifyRoot(x);
+            
+            targetA = simplified.a;
+            targetB = simplified.b;
+            
+            document.getElementById("questionDisplay").innerHTML = `√${x}`;
+
+        } else if (activeMenu === 2) {
+            // MENÜ 2: KÖK İÇİNE ALMA
+            document.getElementById("questionType").innerText = "Katsayıyı kök içine alarak √x biçiminde tek bir sayı yapınız:";
+            
+            let a = getRandomInt(2, 9);
+            let b = getRandomInt(2, 8);
+            
+            targetA = 0; // Bu modda katsayı kutusu gizli
+            targetB = (a * a) * b; // Cevap direkt b kutusuna yazılacak (x değeri)
+            
+            document.getElementById("questionDisplay").innerHTML = `${a}√${b}`;
+
+        } else if (activeMenu === 3) {
+            // MENÜ 3: TOPLAMA & ÇIKARMA
+            let isAddition = getRandomInt(0, 1) === 1;
+            let bBase = getRandomInt(2, 5); 
+            while(Math.sqrt(bBase) % 1 === 0) { bBase = getRandomInt(2, 5); }
+
+            if (isAddition) { 
+                document.getElementById("questionType").innerText = "Toplama işleminin sonucunu en sade a√b biçiminde yazınız:";
+                let a1 = getRandomInt(1, 6);
+                let a2 = getRandomInt(1, 6);
+                
+                let x1 = (a1 * a1) * bBase;
+                let x2 = (a2 * a2) * bBase;
+                
+                targetA = a1 + a2;
+                targetB = bBase;
+                document.getElementById("questionDisplay").innerHTML = `√${x1} + √${x2}`;
+            } else { 
+                document.getElementById("questionType").innerText = "Çıkarma işleminin sonucunu en sade a√b biçiminde yazınız:";
+                let a1 = getRandomInt(4, 8);
+                let a2 = getRandomInt(1, 3);
+                
+                let x1 = (a1 * a1) * bBase;
+                let x2 = (a2 * a2) * bBase;
+                
+                targetA = a1 - a2;
+                targetB = bBase;
+                document.getElementById("questionDisplay").innerHTML = `√${x1} - √${x2}`;
+            }
+
+        } else if (activeMenu === 4) {
+            // MENÜ 4: ÇARPMA & BÖLME
+            let isMultiplication = getRandomInt(0, 1) === 1;
+
+            if (isMultiplication) { 
+                document.getElementById("questionType").innerText = "Çarpma işleminin sonucunu en sade a√b biçiminde yazınız:";
+                let a1 = getRandomInt(1, 4);
+                let b1 = getRandomInt(2, 5);
+                let a2 = getRandomInt(1, 4);
+                let b2 = getRandomInt(2, 5);
+                
+                let simplified = simplifyRoot(b1 * b2);
+                targetA = (a1 * a2) * simplified.a;
+                targetB = simplified.b;
+                
+                let str1 = a1 === 1 ? `√${b1}` : `${a1}√${b1}`;
+                let str2 = a2 === 1 ? `√${b2}` : `${a2}√${b2}`;
+                document.getElementById("questionDisplay").innerHTML = `${str1} &times; ${str2}`;
+            } else { 
+                document.getElementById("questionType").innerText = "Bölme işleminin sonucunu en sade a√b biçiminde yazınız:";
+                let target_b = getRandomInt(1, 5); // 1 çıkma ihtimali tam sayı getirir
+                let target_a = getRandomInt(1, 4); 
+                
+                let payda_b = getRandomInt(2, 4);
+                let payda_a = getRandomInt(1, 2);
+                
+                let pay_b = target_b * payda_b;
+                let pay_a = target_a * payda_a;
+                
+                let pay_tam = (pay_a * pay_a) * pay_b;
+                let payda_tam = (payda_a * payda_a) * payda_b;
+                
+                let simplified = simplifyRoot(target_b);
+                targetA = target_a * simplified.a;
+                targetB = simplified.b;
+                
+                document.getElementById("questionDisplay").innerHTML = `√${pay_tam} &divide; √${payda_tam}`;
+            }
+        }
+    }
+
+    // Cevap Doğrulama Merkezi
+    function checkAnswer() {
+        let isCorrect = false;
+        let correctAnswerString = "";
+        
+        let uA = parseInt(document.getElementById("ansA").value);
+        let uB = parseInt(document.getElementById("ansB").value);
+
+        if (activeMenu === 2) {
+            // Kök içine alma modunda sadece tek input (b kutusu) kontrol edilir
+            if (isNaN(uB)) { alert("Lütfen boş alanı doldurun!"); return; }
+            if (uB === targetB) isCorrect = true;
+            correctAnswerString = `√${targetB}`;
+        } else {
+            // Diğer tüm modlar (a√b) formatındadır
+            
+            // Sonuç bir tam sayı ise (örn: targetB = 1 ise) kullanıcının b kutusunu boş bırakması veya 1 yazması kabul edilir.
+            if (targetB === 1 && isNaN(uB)) uB = 1;
+
+            if (isNaN(uA) || isNaN(uB)) { 
+                alert("Lütfen alanları doldurun! (Sonuç tam sayı ise kök içine 1 yazabilirsiniz)"); 
+                return; 
+            }
+            
+            if (uA === targetA && uB === targetB) isCorrect = true;
+            correctAnswerString = targetB === 1 ? `${targetA}` : `${targetA}√${targetB}`;
+        }
+
+        // Arayüz güncelleme ve Puanlama
+        let resDiv = document.getElementById("resultMessage");
+        if (isCorrect) {
+            resDiv.innerText = "Tebrikler! Doğru Cevap. 🎯";
+            resDiv.className = "result correct";
+            scoreCorrect++;
+            document.getElementById("correctCount").innerText = scoreCorrect;
+        } else {
+            resDiv.innerText = `Yanlış Cevap. Doğrusu: ${correctAnswerString}`;
+            resDiv.className = "result wrong";
+            scoreWrong++;
+            document.getElementById("wrongCount").innerText = scoreWrong;
+        }
+
+        document.getElementById("btnCheck").classList.add("hidden");
+        document.getElementById("btnNext").classList.remove("hidden");
+    }
+
+    window.onload = function() {
+        generateQuestion();
+    };
+</script>
+
+</body>
+</html>
